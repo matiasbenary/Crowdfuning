@@ -4,10 +4,8 @@ import {
   call,
   view,
   AccountId,
-  ONE_NEAR,
   near,
   initialize,
-  Vector,
   UnorderedMap,
   assert,
   NearPromise,
@@ -49,7 +47,7 @@ class Crowdfunding {
   }
 
   @call({})
-  claim_funds(): void {
+  claim_funds(): NearPromise {
     assert(
       near.predecessorAccountId() == this.owner_id,
       "Only owner can claim the funding"
@@ -57,8 +55,9 @@ class Crowdfunding {
     assert(near.blockTimestamp() > this.end_date, "The project is not over");
     assert(this.total >= this.goal, "I don't reach the goal to claim");
 
-    NearPromise.new(this.owner_id).transfer(this.total);
+    const promise = NearPromise.new(this.owner_id).transfer(this.total);
     this.total = BigInt(0);
+    return promise;
   }
 
   @call({})
